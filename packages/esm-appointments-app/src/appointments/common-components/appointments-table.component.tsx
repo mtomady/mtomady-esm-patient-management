@@ -126,7 +126,7 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
         displayText={
           tableHeading === t('todays', "Today's")
             ? t('appointmentsScheduledForToday', 'appointments scheduled for today')
-            : `${t(tableHeading)} ${t('appointments_lower', 'appointments')}`
+            : t('appointments_lower', 'appointments')
         }
         // TODO @brandones: Make this a workspace, not an extension
         launchForm={() => launchWorkspace('search-patient')}
