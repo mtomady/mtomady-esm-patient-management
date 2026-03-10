@@ -1,5 +1,11 @@
 import type { OpenmrsResource } from '@openmrs/esm-framework';
 
+export interface Location {
+  uuid: string;
+  display: string;
+  name?: string;
+}
+
 export enum PatientListType {
   STARRED = 'Starred',
   SYSTEM = 'System list',
@@ -20,6 +26,7 @@ export interface PatientList {
   description: string;
   type: string;
   size: number;
+  location?: Location | null;
   options?: Array<PatientListOption>;
 }
 
