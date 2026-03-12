@@ -75,27 +75,25 @@ export function useAllPatientLists({ isStarred, type }: PatientListFilter) {
     location: cohort.location,
   }));
   const { user, sessionLocation } = useSession();
-
-  console.log('Current session location:', sessionLocation);
-  console.log('Total lists before location filter:', patientListsData.length);
-  console.log('List type:', type);
-
-  // Filter by location ONLY for "My Lists" (user-created lists)
-  // System lists should be visible to everyone
   const locationFilteredLists = patientListsData.filter((list) => {
-    // If this is NOT a "My Lists" tab, show all lists (no location filter)
-
-    // For "My Lists" tab, apply location filter
-    if (type !== PatientListType.USER) {
+    if (type === PatientListType.USER) {
+      if (!sessionLocation?.uuid) {
+        return true;
+      }
+      return !list.location || list.location.uuid === sessionLocation.uuid;
+    }
+    if (type === PatientListType.ALL) {
+      console.log('You are in ALL lists');
+      if (list.type === 'System list') {
+        return true;
+      }
+      const isUserList = list.type === 'My List' || list.type === config.myListCohortTypeUUID;
+      if (isUserList) {
+        return !list.location || list.location.uuid === sessionLocation.uuid;
+      }
       return true;
     }
-    if (!sessionLocation?.uuid) {
-      // If user has no session location, show all lists
-      return true;
-    }
-
-    // Show lists with no location OR lists matching the current location
-    return !list.location || list.location.uuid === sessionLocation.uuid;
+    return true;
   });
 
   console.log('Lists after location filter:', locationFilteredLists.length);

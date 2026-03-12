@@ -27,6 +27,7 @@ function usePatientListFilterForCurrentTab(selectedTab: number) {
       case TabIndices.MY_LISTS:
         return { type: PatientListType.USER, label: t('userDefined', 'user-defined') };
       case TabIndices.ALL_LISTS:
+        return { type: PatientListType.ALL, label: t('allLists', 'All lists') };
       default:
         return { label: '' };
     }
