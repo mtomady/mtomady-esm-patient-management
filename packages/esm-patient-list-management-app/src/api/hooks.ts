@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { useEffect } from 'react';
 import useSWR from 'swr';
 import useSWRInfinite from 'swr/infinite';
@@ -83,7 +82,6 @@ export function useAllPatientLists({ isStarred, type }: PatientListFilter) {
       return !list.location || list.location.uuid === sessionLocation.uuid;
     }
     if (type === PatientListType.ALL) {
-      console.log('You are in ALL lists');
       if (list.type === 'System list') {
         return true;
       }
@@ -95,8 +93,6 @@ export function useAllPatientLists({ isStarred, type }: PatientListFilter) {
     }
     return true;
   });
-
-  console.log('Lists after location filter:', locationFilteredLists.length);
 
   return {
     patientLists: isStarred
