@@ -75,23 +75,20 @@ export function useAllPatientLists({ isStarred, type }: PatientListFilter) {
   }));
   const { user, sessionLocation } = useSession();
   const locationFilteredLists = patientListsData.filter((list) => {
-    if (type === PatientListType.USER) {
-      if (!sessionLocation?.uuid) {
+    const matchesLocation = () =>
+      !sessionLocation?.uuid || !list.location || list.location.uuid === sessionLocation.uuid;
+    switch (type) {
+      case PatientListType.USER:
+        return matchesLocation();
+      case PatientListType.ALL:
+        if (list.type?.toLowerCase().includes('system')) return true;
+        if (list.type === 'My List' || list.type === config.myListCohortTypeUUID) {
+          return matchesLocation();
+        }
         return true;
-      }
-      return !list.location || list.location.uuid === sessionLocation.uuid;
-    }
-    if (type === PatientListType.ALL) {
-      if (list.type === 'System list') {
+      default:
         return true;
-      }
-      const isUserList = list.type === 'My List' || list.type === config.myListCohortTypeUUID;
-      if (isUserList) {
-        return !list.location || list.location.uuid === sessionLocation.uuid;
-      }
-      return true;
     }
-    return true;
   });
 
   return {
