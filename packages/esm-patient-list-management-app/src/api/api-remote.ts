@@ -12,6 +12,7 @@ import {
   putDynamicOfflineData,
   toOmrsIsoString,
   useConfig,
+  useSession,
 } from '@openmrs/esm-framework';
 import { type PatientListManagementConfig } from '../config-schema';
 import {
@@ -97,7 +98,7 @@ export async function getAllPatientLists(
   systemListCohortTypeUUID,
   ac = new AbortController(),
 ) {
-  const custom = 'custom:(uuid,name,description,display,size,attributes,cohortType)';
+  const custom = 'custom:(uuid,name,description,display,size,attributes,cohortType,location:(uuid,display))';
   const query: Array<[string, string]> = [['v', custom]];
 
   if (filter.name !== undefined && filter.name !== '') {
@@ -133,6 +134,7 @@ export async function getAllPatientLists(
     type: cohort.cohortType?.display,
     size: cohort.size,
     isStarred: false, // TODO
+    location: cohort.location,
   }));
 }
 
@@ -264,13 +266,25 @@ export async function findRealPatientListsWithoutPatient(
   patientUuid: string,
   myListCohortUUID: string,
   systemListCohortType: string,
+  sessionLocationUuid?: string,
 ): Promise<Array<AddablePatientListViewModel>> {
   const [allLists, listsIdsOfThisPatient] = await Promise.all([
     getAllPatientLists({}, myListCohortUUID, systemListCohortType),
     getPatientListIdsForPatient(patientUuid),
   ]);
 
-  return allLists.map((list) => ({
+  const matchesLocation = (list: { location?: { uuid: string } }) =>
+    !sessionLocationUuid || !list.location || list.location.uuid === sessionLocationUuid;
+
+  const locationFilteredLists = allLists.filter((list) => {
+    if (list.type?.toLowerCase().includes('system')) return true;
+    if (list.type === 'My List' || list.type === myListCohortUUID) {
+      return matchesLocation(list);
+    }
+    return true;
+  });
+
+  return locationFilteredLists.map((list) => ({
     id: list.id,
     displayName: list.display,
     checked: listsIdsOfThisPatient.includes(list.id),
@@ -316,13 +330,20 @@ export async function findFakePatientListsWithoutPatient(
 export function useAddablePatientLists(patientUuid: string) {
   const { t } = useTranslation();
   const config = useConfig<PatientListManagementConfig>();
-  return useSWR(['addablePatientLists', patientUuid], async () => {
+  const { sessionLocation } = useSession();
+
+  return useSWR(['addablePatientLists', patientUuid, sessionLocation?.uuid], async () => {
     // Using Promise.allSettled instead of Promise.all here because some distros might not have the
     // cohort module installed, leading to the real patient list call failing.
     // In that case we still want to show fake lists and *not* error out here.
     const [fakeLists, realLists] = await Promise.allSettled([
       findFakePatientListsWithoutPatient(patientUuid, t),
-      findRealPatientListsWithoutPatient(patientUuid, config.myListCohortTypeUUID, config.systemListCohortTypeUUID),
+      findRealPatientListsWithoutPatient(
+        patientUuid,
+        config.myListCohortTypeUUID,
+        config.systemListCohortTypeUUID,
+        sessionLocation?.uuid,
+      ),
     ]);
 
     return [

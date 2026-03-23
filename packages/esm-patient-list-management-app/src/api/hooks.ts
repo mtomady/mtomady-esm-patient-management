@@ -20,7 +20,7 @@ interface PatientListResponse {
 }
 
 export function useAllPatientLists({ isStarred, type }: PatientListFilter) {
-  const custom = 'custom:(uuid,name,description,display,size,attributes,cohortType)';
+  const custom = 'custom:(uuid,name,description,display,size,attributes,cohortType,location:(uuid,display))';
   const query: Array<[string, string]> = [
     ['v', custom],
     ['totalCount', 'true'],
@@ -71,13 +71,30 @@ export function useAllPatientLists({ isStarred, type }: PatientListFilter) {
     description: cohort.description,
     type: cohort.cohortType?.display,
     size: cohort.size,
+    location: cohort.location,
   }));
-  const { user } = useSession();
+  const { user, sessionLocation } = useSession();
+  const locationFilteredLists = patientListsData.filter((list) => {
+    const matchesLocation = () =>
+      !sessionLocation?.uuid || !list.location || list.location.uuid === sessionLocation.uuid;
+    switch (type) {
+      case PatientListType.USER:
+        return matchesLocation();
+      case PatientListType.ALL:
+        if (list.type?.toLowerCase().includes('system')) return true;
+        if (list.type === 'My List' || list.type === config.myListCohortTypeUUID) {
+          return matchesLocation();
+        }
+        return true;
+      default:
+        return true;
+    }
+  });
 
   return {
     patientLists: isStarred
-      ? patientListsData.filter(({ id }) => user?.userProperties?.starredPatientLists?.includes(id))
-      : patientListsData,
+      ? locationFilteredLists.filter(({ id }) => user?.userProperties?.starredPatientLists?.includes(id))
+      : locationFilteredLists,
     isLoading,
     isValidating,
     error,
