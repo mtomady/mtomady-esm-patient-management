@@ -90,5 +90,7 @@
   "trySearchingForADifferentList": "Essayez de rechercher une autre liste",
   "unstarList": "Enlever des favoris",
   "updated": "Modifiée",
-  "userDefined": "Utilisateur"
+  "userDefined": "Utilisateur",
+  "System List": "Liste système",
+  "My List": "Ma liste"
 }

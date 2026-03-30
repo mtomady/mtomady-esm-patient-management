@@ -90,5 +90,7 @@
   "trySearchingForADifferentList": "Try searching for a different list",
   "unstarList": "Unstar list",
   "updated": "Updated",
-  "userDefined": "user-defined"
+  "userDefined": "user-defined",
+  "System List": "System List",
+  "My List": "My List"
 }

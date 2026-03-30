@@ -18,6 +18,7 @@ import {
   type ErrorObject,
 } from '../api/api-remote';
 import { useCohortTypes } from '../api/hooks';
+import { getCohortTypeDisplayLabel } from '../utils/cohort-type-display';
 import styles from './patient-list-form.scss';
 
 const createCohortSchema = (t: TFunction) => {
@@ -182,7 +183,7 @@ const PatientListFormWorkspace: React.FC<PatientListFormWorkspaceProps> = ({
             <Dropdown
               id="cohortType"
               items={listCohortTypes}
-              itemToString={(item) => (item ? item.display : '')}
+              itemToString={(item) => getCohortTypeDisplayLabel(item, t)}
               label={t('chooseCohortType', 'Choose cohort type')}
               onChange={({ selectedItem }) => {
                 setCohortDetails((prev) => ({
