@@ -1,9 +1,11 @@
 import { useEffect } from 'react';
 import useSWR from 'swr';
 import useSWRInfinite from 'swr/infinite';
+import { useTranslation } from 'react-i18next';
 import { openmrsFetch, type FetchResponse, useConfig, useSession } from '@openmrs/esm-framework';
 import { cohortUrl, getAllPatientLists, getPatientListIdsForPatient, getPatientListMembers } from './api-remote';
 import { type PatientListManagementConfig } from '../config-schema';
+import { getCohortTypeDisplayLabel } from '../utils/cohort-type-display';
 import {
   type CohortResponse,
   type CohortType,
@@ -20,6 +22,7 @@ interface PatientListResponse {
 }
 
 export function useAllPatientLists({ isStarred, type }: PatientListFilter) {
+  const { t } = useTranslation();
   const custom = 'custom:(uuid,name,description,display,size,attributes,cohortType,location:(uuid,display))';
   const query: Array<[string, string]> = [
     ['v', custom],
@@ -69,7 +72,7 @@ export function useAllPatientLists({ isStarred, type }: PatientListFilter) {
     id: cohort.uuid,
     display: cohort.name,
     description: cohort.description,
-    type: cohort.cohortType?.display,
+    type: cohort.cohortType ? getCohortTypeDisplayLabel(cohort.cohortType, t) : undefined,
     size: cohort.size,
     location: cohort.location,
   }));
